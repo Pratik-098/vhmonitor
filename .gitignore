@@ -1,0 +1,28 @@
+# Compiled objects, libraries, and executables
+*.o
+*.a
+*.so
+*.so.*
+*.out
+/app/vhmonitor
+
+# Linux kernel module build artifacts
+*.ko
+*.mod
+*.mod.c
+*.cmd
+*.o.d
+Module.symvers
+modules.order
+.tmp_versions/
+
+# Temporary and backup files
+*.tmp
+*.bak
+*~
+
+# Editor-generated files
+*.swp
+*.swo
+.vscode/
+.idea/
