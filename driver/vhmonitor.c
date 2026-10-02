@@ -11,8 +11,38 @@
 static dev_t vhmonitor_dev;
 static struct cdev vhmonitor_cdev;
 
+static const char vhmonitor_readings[] =
+    "Temperature: 35 C\n"
+    "Voltage: 12000 mV\n"
+    "Fan: OK\n"
+    "Device: OK\n"
+    "Fault: NONE\n";
+
+static int vhmonitor_open(struct inode *inode, struct file *file)
+{
+    pr_info("vhmonitor: device opened\n");
+    return 0;
+}
+
+static int vhmonitor_release(struct inode *inode, struct file *file)
+{
+    pr_info("vhmonitor: device released\n");
+    return 0;
+}
+
+static ssize_t vhmonitor_read(struct file *file, char __user *buffer,
+                             size_t count, loff_t *position)
+{
+    return simple_read_from_buffer(buffer, count, position,
+                                   vhmonitor_readings,
+                                   sizeof(vhmonitor_readings) - 1);
+}
+
 static const struct file_operations vhmonitor_fops = {
     .owner = THIS_MODULE,
+    .open = vhmonitor_open,
+    .read = vhmonitor_read,
+    .release = vhmonitor_release,
 };
 
 static int __init vhmonitor_init(void)
