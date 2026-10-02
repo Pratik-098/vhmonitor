@@ -5,6 +5,10 @@
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 #include <linux/cdev.h>
+#include <linux/uaccess.h>
+#include <linux/errno.h>
+
+#include "../shared/vhmonitor_ioctl.h"
 
 #define DEVICE_NAME "vhmonitor"
 
@@ -17,6 +21,14 @@ static const char vhmonitor_readings[] =
     "Fan: OK\n"
     "Device: OK\n"
     "Fault: NONE\n";
+
+static const struct vhmonitor_data vhmonitor_state = {
+    .temperature_mc = 35000,
+    .voltage_mv = 12000,
+    .fan_status = VHMONITOR_STATUS_OK,
+    .device_status = VHMONITOR_STATUS_OK,
+    .fault_state = VHMONITOR_FAULT_NONE,
+};
 
 static int vhmonitor_open(struct inode *inode, struct file *file)
 {
@@ -38,11 +50,27 @@ static ssize_t vhmonitor_read(struct file *file, char __user *buffer,
                                    sizeof(vhmonitor_readings) - 1);
 }
 
+static long vhmonitor_ioctl(struct file *file, unsigned int command,
+                            unsigned long argument)
+{
+    switch (command) {
+    case VHMONITOR_GET_DATA:
+        if (copy_to_user((void __user *)argument,
+                         &vhmonitor_state, sizeof(vhmonitor_state)))
+            return -EFAULT;
+        return 0;
+
+    default:
+        return -ENOTTY;
+    }
+}
+
 static const struct file_operations vhmonitor_fops = {
     .owner = THIS_MODULE,
     .open = vhmonitor_open,
     .read = vhmonitor_read,
     .release = vhmonitor_release,
+    .unlocked_ioctl = vhmonitor_ioctl,
 };
 
 static int __init vhmonitor_init(void)
