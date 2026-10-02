@@ -11,14 +11,44 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2 ||
-        (std::strcmp(argv[1], "read") != 0 &&
-         std::strcmp(argv[1], "status") != 0)) {
-        std::cerr << "Usage: " << argv[0] << " <read|status>\n";
+    const auto usage = [&]() {
+        std::cerr << "Usage:\n"
+                  << "  " << argv[0] << " read\n"
+                  << "  " << argv[0] << " status\n"
+                  << "  " << argv[0] << " fault <overheat|voltage|fan>\n"
+                  << "  " << argv[0] << " reset\n";
+    };
+
+    if (argc < 2) {
+        usage();
         return 1;
     }
 
-    const int fd = open("/dev/vhmonitor", O_RDONLY);
+    const bool read_command = std::strcmp(argv[1], "read") == 0;
+    const bool status_command = std::strcmp(argv[1], "status") == 0;
+    const bool fault_command = std::strcmp(argv[1], "fault") == 0;
+    const bool reset_command = std::strcmp(argv[1], "reset") == 0;
+    __u32 fault = VHMONITOR_FAULT_NONE;
+
+    if (fault_command && argc == 3) {
+        if (std::strcmp(argv[2], "overheat") == 0)
+            fault = VHMONITOR_FAULT_OVERHEAT;
+        else if (std::strcmp(argv[2], "voltage") == 0)
+            fault = VHMONITOR_FAULT_VOLTAGE;
+        else if (std::strcmp(argv[2], "fan") == 0)
+            fault = VHMONITOR_FAULT_FAN;
+        else {
+            usage();
+            return 1;
+        }
+    } else if (argc != 2 ||
+               !(read_command || status_command || reset_command)) {
+        usage();
+        return 1;
+    }
+
+    const int flags = (fault_command || reset_command) ? O_RDWR : O_RDONLY;
+    const int fd = open("/dev/vhmonitor", flags);
     if (fd == -1) {
         std::perror("open /dev/vhmonitor");
         return 1;
@@ -26,7 +56,7 @@ int main(int argc, char *argv[])
 
     bool success = true;
 
-    if (std::strcmp(argv[1], "read") == 0) {
+    if (read_command) {
         char buffer[128];
 
         while (true) {
@@ -45,7 +75,7 @@ int main(int argc, char *argv[])
 
             std::cout.write(buffer, bytes);
         }
-    } else {
+    } else if (status_command) {
         vhmonitor_data data{};
 
         if (ioctl(fd, VHMONITOR_GET_DATA, &data) == -1) {
@@ -63,6 +93,20 @@ int main(int argc, char *argv[])
                       << (data.device_status == VHMONITOR_STATUS_OK
                               ? "OK" : "FAILED") << '\n'
                       << "Fault code: " << data.fault_state << '\n';
+        }
+    } else if (fault_command) {
+        if (ioctl(fd, VHMONITOR_SET_FAULT, &fault) == -1) {
+            std::perror("VHMONITOR_SET_FAULT");
+            success = false;
+        } else {
+            std::cout << "Fault injected: " << argv[2] << '\n';
+        }
+    } else if (reset_command) {
+        if (ioctl(fd, VHMONITOR_RESET) == -1) {
+            std::perror("VHMONITOR_RESET");
+            success = false;
+        } else {
+            std::cout << "Device reset to normal\n";
         }
     }
 
