@@ -192,6 +192,38 @@ virtual readings and controls simple fault scenarios through system calls.
 The documented tests verified the stated normal, fault, error, and cleanup
 behavior within the project's defined scope.
 
+## 15. Achievements
+
+- Implemented a software-only monitoring device as a Linux character driver.
+- Connected a C++ application through open(), read(), ioctl(), and close().
+- Verified normal readings, three fault scenarios, and reset through both
+  text and structured interfaces.
+- Verified partial reads, EOF, invalid requests, invalid pointers,
+  write-access enforcement, and state preservation after rejected requests.
+- Demonstrated mutex-protected state access and explicit resource cleanup.
+- Published source, tests, execution instructions, and development evidence
+  in a public GitHub repository.
+
+These achievements refer to the documented tests and implementation.
+They do not imply physical hardware validation or exhaustive testing.
+
+## 16. Possible Future Improvements
+
+The following are proposals only. They are not implemented, tested, or
+required for the current project, and do not change its agreed scope.
+
+| Proposal | Motivation | Verification needed if implemented |
+| --- | --- | --- |
+| Stable snapshot across partial reads | Avoid mixing readings when state changes between read calls | Concurrent state-change and small-buffer read tests |
+| Automatic device-node lifecycle | Reduce manual setup and stale device-node errors | Load/unload, creation-failure, and cleanup tests |
+| 32-bit compatibility IOCTL support | Support 32-bit applications on a 64-bit kernel | Builds and interface tests with a 32-bit application |
+| Automated fault-transition coverage | Exercise every supported transition and repeated selection systematically | State assertions for each transition and reset |
+| Additional concurrency testing | Strengthen evidence for simultaneous monitoring and fault requests | Concurrent readers/writers and repeated load/use/cleanup checks |
+
+Any future implementation would require separate planning and approval.
+The current project remains Linux-only, C/C++-only, and independent of
+physical hardware.
+
 ## References
 
 - Linux kernel IOCTL interface guidance:

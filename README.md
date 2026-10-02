@@ -129,6 +129,10 @@ Rebuild the kernel module against the running kernel's headers.
 - [Testing results](docs/testing.md)
 - [Demonstration checklist](docs/demo-checklist.md)
 - [Final project report](docs/final-report.md)
+- [Project Requirements Document](docs/requirements.md)
+- [Development plan and milestone evidence](docs/development-plan.md)
+- [UML class diagram](docs/class-diagram.md)
+- [Virtual device state machine](docs/state-machine.md)
 
 ## Current Limitations
 
