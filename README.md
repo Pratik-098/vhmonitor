@@ -127,6 +127,8 @@ Rebuild the kernel module against the running kernel's headers.
 - [Build, execution, demonstration, and cleanup](docs/execution.md)
 - [Integration test record](docs/integration-test.md)
 - [Testing results](docs/testing.md)
+- [Demonstration checklist](docs/demo-checklist.md)
+- [Final project report](docs/final-report.md)
 
 ## Current Limitations
 
